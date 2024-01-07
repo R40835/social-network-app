@@ -1,0 +1,83 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}
+    <title>Chat</title>
+{% endblock title %}
+{% block content %}
+    <div id="chat-container">
+        <div class="chat-header">
+            <div class="user-section">
+                <div class="center-content">
+                    <a class="custom-link box-user-container" href="{% url 'users:user-posts' participant.id %}">
+                        {% if participant.profile_photo %}
+                            <img class="participant-photo" style="width: 50px; height: 50px;" src="{{ participant.profile_photo.url }}" alt="...">
+                        {% else %} 
+                            <img class="participant-photo" src="/media/app/default-user.png" style="width: 50px; height: 50px;" alt="...">
+                        {% endif %}
+                        <h2 class="user-name">
+                            {{ participant.first_name }} {{participant.last_name}}
+                        </h2>
+                    </a>
+                </div>
+            </div>
+            <div class="call-section">
+                <i id="call-data" class="fa-solid fa-video start-call call-button" caller-name="{{request.user.first_name}} {{request.user.last_name}}" caller-id="{{request.user.id}}" callee-name="{{participant.first_name}} {{participant.last_name}}" callee-id="{{participant.id}}"></i>
+            </div>
+            <script type="text/javascript" src="/static/js/start_call.js"></script>
+        </div>
+        <div id="chat-log" class="chat-log" current-user-id="{{request.user.id}}" current-user-name="{{ request.user.first_name }} {{ request.user.last_name }}" current-user-profile-photo="{% if request.user.profile_photo %} {{ request.user.profile_photo.url }} {% else %} /media/app/default-user.png {% endif %}" paticipant-profile-photo="{% if participant.profile_photo %} {{ participant.profile_photo.url }} {% else %} /media/app/default-user.png {% endif %}">
+            <div id="loading-spinner" class="messages-spinner" style="display: none;"></div>
+            {% if messages %}
+                {% for message in messages reversed %}
+                    <div class="message-container {% if message.sender == request.user %} sender-message {% else %} receiver-message{% endif %}" sender="{{message.sender.id}}" data-sender="{{ message.sender.first_name }}" data-timestamp="{{ message.timestamp }}">
+                        {% if message.sender == request.user %}
+                            {% if request.user.profile_photo %}
+                                <img class="participant-photo" src="{{request.user.profile_photo.url}}" alt="...">
+                            {% else %} 
+                                <img class="participant-photo" src="/media/app/default-user.png" alt="...">
+                            {% endif %}
+                            <p>{{ message.content }}</p>
+                        {% else %}
+                            {% if message.sender.profile_photo %}
+                                <img class="participant-photo" src="{{message.sender.profile_photo.url}}" alt="...">
+                            {% else %}
+                                <img class="participant-photo" src="/media/app/default-user.png" alt="...">
+                            {% endif %}
+                            <p>{{ message.content }}</p>
+                        {% endif %}
+                    </div>
+                    {% if message.sender == request.user %}
+                        <small><strong>You &nbsp;</strong>{{message.timestamp}}</small>
+                    {% else %}
+                        <small style="margin-left: 50%;"><strong>{{ message.sender.first_name }}</strong> &nbsp;{{message.timestamp}}</small>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div id="no-messages" class="center-content">
+                    <p>No messages yet, start the conversation.</p>
+                </div>
+            {% endif %}   
+            {% if messages %}      
+                {% if user_is_last_sender %}
+                    <div id="indicator" class="message-indicator sent-indicator">Sent</div>
+                {% else %}
+                    <div id="indicator" class="message-indicator received-indicator">Received</div>
+                {% endif %}
+            {% else %}
+                <div id="indicator" style="display: none;"></div>
+            {% endif %}
+        </div>
+        <div class="type-send">
+            <input id="chat-message-input" class="item-type" type="text" size="100" placeholder="Type your message..." required><br>
+            <button id="chat-message-submit" class="item-send"><i class="far fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+{{ user_id|json_script:"user-id" }}
+<script type="module" src="{% static 'js/messages.js' %}"></script>
+
+{% if messages.has_next %}
+    <a id="messages-paginator" href="?page={{ messages.next_page_number }}" style="display: hidden;" current-page="{{ messages.number }}" total-pages="{{ messages.paginator.num_pages }}" current-user-id="{{request.user.id}}"></a>
+{% endif %}
+<script type="text/javascript" src="/static/js/messages_scroll.js"></script>    
+{% endblock content %}

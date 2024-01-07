@@ -1,0 +1,68 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}
+    <title>Notifications</title>
+{% endblock title %}
+{% block content %}
+  <div class="jumbotron notification-container">
+      {% if page %}
+      <div class="row infinite-container">
+          {% for notification in page %}
+          <div class="col-md-12 infinite-item">
+              <div class="{% if not notification.is_read %}new-notification{% else %}old-notification{% endif %}">
+                <a class="custom-link" href="{% if notification.notification_type == "New-friend" %}{% url 'notification:view-friend-notification' notification.sender_id notification.accepter.id %} {% else %}{% url 'notification:view-post-notification' notification.post_id %}{% endif %}">
+                  <div class="box-user-container">
+                    {% if notification.notification_type == "New-friend"%}
+                        <img class="mini-profile-picture" src="{% if notification.accepter.profile_photo %}{{ notification.accepter.profile_photo.url }} {% else %}/media/app/default-user.png{% endif%}" alt="...">
+                    {% else %}
+                        <img class="mini-profile-picture" src="{% if notification.sender.profile_photo %}{{ notification.sender.profile_photo.url }} {% else %}/media/app/default-user.png{% endif%}" alt="...">
+                    {% endif %}
+                    {% if notification.notification_type == "Like" %}
+                      <p class="user-name"><b>{{notification.sender.first_name}} {{notification.sender.last_name}}</b> liked your post.</p>
+                    {% elif notification.notification_type == "Comment" %}
+                      <p class="user-name"><b>{{notification.sender.first_name}} {{notification.sender.last_name}}</b> commented on your post.</p>
+                    {% elif notification.notification_type == "New-friend" %}
+                      <p class="user-name"><b>{{notification.accepter.first_name}} {{notification.accepter.last_name}}</b> accepted your friend request.</p>
+                    {% endif %}
+                  </div>
+                  <small>{{notification.timestamp}}</small>
+                  </a>
+              </div>
+            </div>
+          {% endfor %}
+          </div>
+      {% else %}
+      <div class="jumbotron center-content">
+        <div class="result-box">
+            <h1>No notifications yet.</h1>
+        </div>
+    </div>      {% endif %}
+  </div>
+    <div class="pagination-container">
+    </div>
+    <div class="spinner loading"></div>
+    <div class="row">
+        <span class="col-12">
+            {% if page.has_next %}
+                <a class="infinite-more-link" href="?page={{ page.next_page_number }}"></a>
+            {% endif %}
+        </span>
+    </div>
+    
+    <script src="{% static "js/jquery.waypoints.min.js" %}"></script>
+    <script src="/static/js/infinite.min.js"></script>
+    <script>
+        var infinite = new Waypoint.Infinite({
+            element: $('.infinite-container')[0],
+
+            offset: 'bottom-in-view',
+
+            onBeforePageLoad: function () {
+                $('.loading').show();
+            },
+            onAfterPageLoad: function () {
+                $('.loading').hide();
+            }
+        });
+    </script>
+{% endblock content %}

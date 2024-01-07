@@ -1,0 +1,118 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}
+    <title>Messages</title>
+{% endblock title %}
+{% block content %}
+{% if conversations %}
+<div class="messages-container">
+    <div class="row infinite-container">
+    {% for conversation in conversations %}
+    <div class="col-md-12 infinite-item">
+        {% if conversation.user == request.user %}
+            {% if conversation.directmessage_set.exists %}
+                {% with latest_message=conversation.directmessage_set.last %}
+                    <div class="{% if latest_message.is_read == True or latest_message.sender_id == request.user.id %}old-message {% else %} new-message {% endif %}">
+                        <div class="user-photo"> 
+                            {% if conversation.participant.profile_photo %}
+                                <img src="{{conversation.participant.profile_photo.url}}" alt="...">
+                            {% else %}
+                                <img src="/media/app/default-user.png" alt="...">
+                            {% endif %}
+                        </div>
+                        <div class="message-content">
+                            <a class="custom-link" href="{% url 'chat:dm' conversation.participant.id %}">
+                                <div class="user-info">
+                                    <h3 class="user-name">
+                                        {{conversation.participant.first_name}} {{conversation.participant.last_name}}
+                                    </h3>
+                                </div>
+                                <div class="message-text">
+                                    <p>{{ latest_message.content }}</p>
+                                </div>
+                                <p class="message-status">
+                                    {% if latest_message.sender == request.user %}
+                                        sent
+                                    {% else %}
+                                        received
+                                    {% endif %}
+                                </p>
+                            </a>
+                        </div>
+                        <small style="margin-top: 80px;">{{ latest_message.timestamp }}</small>
+                    </div>
+                {% endwith %}
+            {% endif %}
+        {% else %}
+        {% if conversation.directmessage_set.exists %}
+        {% with latest_message=conversation.directmessage_set.last %}
+        <div class="{% if latest_message.is_read == True or latest_message.sender_id == request.user.id %}old-message {% else %} new-message {% endif %}">
+            <div class="user-photo">
+                {% if conversation.user.profile_photo %}
+                    <img src="{{conversation.user.profile_photo.url}}" alt="...">
+                {% else %}
+                    <img src="/media/app/default-user.png" alt="...">
+                {% endif %}
+            </div>
+            <div class="message-content">
+                <a class="custom-link" href="{% url 'chat:dm' conversation.user.id %}">
+                <div class="user-info">
+                    <h3 class="user-name">
+                            {{conversation.user.first_name}} {{conversation.user.last_name}}
+                    </h3>
+                    <div class="message-text">
+                        <p>{{ latest_message.content }}</p>
+                    </div>
+                </div>
+                    <p class="message-status">
+                        {% if latest_message.sender == request.user %}
+                            sent
+                        {% else %}
+                            received
+                        {% endif %}
+                    </p>
+                </a>
+            </div>
+            <small style="margin-top: 80px;">{{ latest_message.timestamp }}</small>
+        </div>
+        {% endwith %}
+            {% endif %}
+        {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+{% else %}
+    <div class="jumbotron">
+        <div class="jumbotron center-content">
+            <div class="result-box">
+                <h1>No messages yet.</h1>
+            </div>
+        </div>
+    </div>
+{% endif %}
+    <div class="pagination-container"></div>
+    <div class="spinner loading"></div>
+    <div class="row">
+        <span class="col-12">
+            {% if conversations.has_next %}
+                <a class="infinite-more-link" href="?page={{ conversations.next_page_number }}"></a>
+            {% endif %}
+        </span>
+    </div>
+    <script src="{% static "js/jquery.waypoints.min.js" %}"></script>
+    <script src="/static/js/infinite.min.js"></script>
+    <script>
+        var infinite = new Waypoint.Infinite({
+            element: $('.infinite-container')[0],
+
+            offset: 'bottom-in-view',
+
+            onBeforePageLoad: function () {
+                $('.loading').show();
+            },
+            onAfterPageLoad: function () {
+                $('.loading').hide();
+            }
+        });
+    </script>
+{% endblock content %}

@@ -1,0 +1,41 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}
+    <title>Call</title>
+{% endblock title %}
+{% block content %}
+<main>
+    <!--Ring-->
+    <audio id="calling-tone">
+        <source src="/media/audio/phone-calling.mp3" type="audio/mp3">
+    </audio>
+    <div id="video-streams">
+        <div  class="current-user-video" id="user-container-{{ request.user.id }}">
+            <div class="video-player" id="user-{{ request.user.id }}"></div>
+        </div>
+        <!--while awaiting callee's response-->
+        <div class="video-container" id="awaiting-response">
+            <div class="callee-photo-wrapper">
+                <img src="{% if remote_user_photo %}{{ remote_user_photo.url }} {% else %} /media/app/default-user.png {% endif %}" alt="Callee Profile Photo">
+            </div>
+        </div>
+    </div>
+    <!--buttons-->
+    <section id="call-controls">
+        <div id="mic-wrapper">
+            <i class="fa-solid fa-microphone" id="mic-on-button"></i>
+            <i class="fa-solid fa-microphone-slash" id="mic-off-button" style="display: none;"></i>
+        </div>
+        <div id="camera-wrapper">
+            <i class="fa-solid fa-video" id="camera-on-button"></i>
+            <i class="fa-solid fa-video-slash" id="camera-off-button" style="display: none;"></i>
+        </div>
+        <div id="hangup-wrapper">
+            <i class="fa-solid fa-phone" id="hangup-button"></i>
+        </div>
+    </section>
+        
+</main>
+<script type="text/javascript" src="/static/js/AgoraRtc-V4.8.0.js"></script>
+<script type="module" src="/static/js/call.js"></script> <!--text/javascript-->
+{% endblock content %}

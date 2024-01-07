@@ -1,0 +1,117 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}
+    <title>Search</title>
+{% endblock title %}
+{% block content %}
+    {% if searched %}
+    <div class="jumbotron center-content">
+            <div class="result-box">
+                <h3>Search Results for: "{{ searched }}".</h2>
+            </div>
+        <br>
+        <div class="row infinite-container">
+        {% for user in page %}
+        <div class="col-md-12 infinite-item">
+                {% if user != request.user %}
+                    <div class="profile-card"> 
+                    {% if user.profile_photo %}
+                        <img id="profile-photo" src="{{ user.profile_photo.url }}" alt="Profile Photo">
+                    {% else %}
+                        <img id="profile-photo" src="/media/app/default-user.png" alt="Profile Photo">
+                    {% endif %}
+                        <div class="profile-content">
+                            <a class="custom-link" href="{% url 'users:user-posts' user.id %}">
+                                <div id="user-name">{{ user.first_name }} {{ user.last_name }}</div>
+                            </a>
+                            <div id="details">
+                                <span class="info">Friends</span><span class="personal-detail">{{ user.user_friendship.all.count }}</span>
+                                <span class="info">Posts</span><span class="personal-detail">{{ user.posts_created.all.count }}</span>
+                            </div>        
+                        {% if user|get_friends_with_prefetch:request.user %}
+                            <small class="user-relationship" id="user-relationship-{{ user.id }}"><b>Friends</b></small>
+                            <div class="action-buttons">
+                                <button class="action-button message-button" data-url="{% url 'chat:dm' user.id %}" button-action="message" user-id="{{ user.id }}">Chat</button>
+                                <button class="action-button remove-friend-button" data-url="{% url 'friend:remove-friend' user.id %}" button-action="remove" user-id="{{ user.id }}">Remove</button>
+                            </div>
+                        {% else %}
+                                {% if request.user|get_received_request_with_prefetch:user %}
+                                    {% with request_id=user|get_request_id_with_prefetch:request.user %}                                           
+                                        <small class="user-relationship" id="user-relationship-{{ user.id }}"><b>Awiting Response</b></small>
+                                        <div class="action-buttons">
+                                            <button class="action-button message-button" data-url="{% url 'chat:dm' user.id %}" button-action="message" user-id="{{ user.id }}">Chat</button>
+                                            <button class="action-button add-friend-button" data-url="{% url 'friend:accept-request' user.id %}" button-action="accept" user-id="{{ user.id }}" id="accept-button-{{ user.id }}">Accept</button>
+                                            <button class="action-button remove-friend-button" data-url="{% url 'friend:decline-request'  request_id %}" button-action="decline" user-id="{{ user.id }}" id="decline-button-{{ user.id }}">Decline</button>
+                                        </div>
+                                    {% endwith %}
+                                {% else %}
+                                    {% if request.user|get_sent_request_with_prefetch:user %} 
+                                        {% with request_id=request.user|get_request_id_with_prefetch:user %}                                           
+                                            <small class="user-relationship" id="user-relationship-{{ user.id }}"><b>Pending</b></small>
+                                            <div class="action-buttons">
+                                                <button class="action-button message-button" data-url="{% url 'chat:dm' user.id %}" button-action="message" user-id="{{ user.id }}">Chat</button>
+                                                <button class="action-button remove-friend-button" data-url="{% url 'friend:send-cancel-request' user.id %}" button-action="send-cancel" user-id="{{ user.id }}">Cancel</button>
+                                            </div>
+                                        {% endwith %}
+                                    {% else %}
+                                            <small class="user-relationship" id="user-relationship-{{ user.id }}"><b>Stranger</b></small>
+                                            <div class="action-buttons">
+                                                {% if request.user|get_sent_request_with_prefetch:user %} 
+                                                    {% with request_id=request.user|get_request_id_with_prefetch:user %} 
+                                                    <button class="action-button remove-friend-button" data-url="{% url 'friend:send-cancel-request' user.id %}" button-action="send-cancel" user-id="{{ user.id }}">Cancel</button>
+                                                    {% endwith %}
+                                                {% endif %}
+                                                <button class="action-button message-button" data-url="{% url 'chat:dm' user.id %}" button-action="message" user-id="{{ user.id }}">Chat</button>
+                                                <button class="action-button add-friend-button" data-url="{% url 'friend:send-cancel-request' user.id %}" button-action="send-cancel" user-id="{{ user.id }}">Add Friend</button>
+                                            </div>
+                                    {% endif %}
+                                {% endif %}
+                        {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+                {% endfor %}
+                </div>        
+                {% if no_results %}
+                    <div class="search-error">
+                        <div class="message">
+                          <i class="fa-solid fa-circle-exclamation fa-fade"></i><h1>User Not found</h1>
+                        </div>
+                        <h3>The user you searched for does not exist</h3>
+                    </div>
+                {% endif %}
+    <script type="text/javascript" src="{% static 'js/multiple_profiles.js' %}"></script>
+
+    {% else %}
+        <h1>Should of typed in something...</h1>
+    {% endif %}
+        <div class="pagination-container"></div>
+        <div class="spinner loading"></div>
+        <div class="row">
+            <span class="col-12">
+                {% if page.has_next %}
+                    <a class="infinite-more-link" href="?page={{ page.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"></a>
+                {% endif %}
+            </span>
+        </div>
+</div>
+    
+<script src="{% static "js/jquery.waypoints.min.js" %}"></script>
+<script src="/static/js/infinite.min.js"></script>
+<script>
+    var infinite = new Waypoint.Infinite({
+        element: $('.infinite-container')[0],
+
+        offset: 'bottom-in-view',
+
+        onBeforePageLoad: function () {
+            $('.loading').show();
+        },
+        onAfterPageLoad: function () {
+            $('.loading').hide();
+        }
+    });
+</script>
+    {% endblock content %}

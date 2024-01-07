@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post likers</title>
+</head>
+<body>
+    {% if likers %}
+        <h1>Post Likers</h1>
+        <br>
+            {% for liker in likers %}
+                <a class="custom-link" href="{% url 'users:user-posts' liker.id %}">
+                    <div class="box-user-container">
+                        {% if liker.profile_photo %}
+                            <img class="mini-profile-picture" src="{{ liker.profile_photo.url }}" alt="...">
+                        {% else %}
+                            <img class="mini-profile-picture" src="/media/app/default-user.png" alt="...">
+                        {% endif %}
+                        <p class="user-name">{{ liker.first_name }} {{ liker.last_name }}</p> 
+                    </div>
+                </a>
+            {% endfor %}   
+    {% else %}
+        <h1>nobody liked this post yet</h1>
+    {% endif %}
+</body>
+</html>

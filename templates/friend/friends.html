@@ -1,0 +1,147 @@
+{% extends "users/user_posts.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}
+    <title>Friends</title>
+{% endblock title %}
+{% block current_page %}
+    <div class="buttons-container">
+        <div class="links">
+            <form action="{% url 'users:user-posts' user.id %}" method="get" class="links">
+                <button class="view">Posts</button>
+            </form>
+            <form action="{% url 'friend:friends-list' user.id %}" method="get" class="links">
+                <button class="view" style="color: #fff; background-color: #555;">Friends</button>
+            </form>
+            <form action="{% url 'users:photos' user.id %}" method="get" class="links">
+                <button class="view">Photos</button>
+            </form>
+            {% if user == request.user %}
+                <form action="{% url 'users:edit-account' %}" method="get" class="links">
+                    <button class="view">Details</button>
+                </form>
+            {% endif %}
+        </div>
+        <br>
+    </div>
+{% endblock current_page %}
+{% block profile_content %}
+<div class="jumbotron center-content">
+    {% if page %}
+    <div class="row infinite-container photo-grid">
+        {% for friend in page %}
+            <div class="col-md-12 infinite-item">
+                <div class="feed-picture">
+                    <div class="profile-card">
+                        {% if friend.friend.profile_photo %}
+                            <img id="profile-photo" src="{{ friend.friend.profile_photo.url }}" alt="Profile Photo">
+                        {% else %}
+                            <img id="profile-photo" src="/media/app/default-user.png" alt="Profile Photo">
+                        {% endif %}
+                        <div class="profile-content">
+                            {% if friend.friend != request.user %}
+                                <a class="custom-link" href="{% url 'users:user-posts' friend.friend.id %}">
+                                    <div id="user-name">{{ friend.friend.first_name }} {{ friend.friend.last_name }}</div>
+                                </a>
+                                <div id="details">
+                                    <span class="info">Friends</span><span class="personal-detail">{{ friend.friend.user_friendship.all.count }}</span>
+                                    <span class="info">Posts</span><span class="personal-detail">{{ friend.friend.posts_created.all.count }}</span>
+                                </div>        
+                                {% if friend.friend|get_friends_with_prefetch:request.user %}
+                                <small class="user-relationship" id="user-relationship-{{ friend.friend.id }}"><b>Friends</b></small>
+                                <div class="action-buttons">
+                                    <button class="action-button message-button" data-url="{% url 'chat:dm' friend.friend.id %}" button-action="message" user-id="{{ friend.friend.id }}">Chat</button>
+                                    <button class="action-button remove-friend-button" data-url="{% url 'friend:remove-friend' friend.friend.id %}" button-action="remove" user-id="{{ friend.friend.id }}">Remove</button>
+                                </div>
+                            {% else %}
+                                    {% if request.user|get_received_request_with_prefetch:friend.friend %}
+                                        {% with request_id=friend.friend|get_request_id_with_prefetch:request.user %}                                           
+                                            <small class="user-relationship" id="user-relationship-{{ friend.friend.id }}"><b>Awiting Response</b></small>
+                                            <div class="action-buttons">
+                                                <button class="action-button message-button" data-url="{% url 'chat:dm' friend.friend.id %}" button-action="message" user-id="{{ friend.friend.id }}">Chat</button>
+                                                <button class="action-button add-friend-button" data-url="{% url 'friend:accept-request' friend.friend.id %}" button-action="accept" user-id="{{ friend.friend.id }}" id="accept-button-{{ friend.friend.id }}">Accept</button>
+                                                <button class="action-button remove-friend-button" data-url="{% url 'friend:decline-request'  request_id %}" button-action="decline" user-id="{{ friend.friend.id }}" id="decline-button-{{ friend.friend.id }}">Decline</button>
+                                            </div>
+                                        {% endwith %}
+                                    {% else %}
+                                        {% if request.user|get_sent_request_with_prefetch:friend.friend %} 
+                                            {% with request_id=request.user|get_request_id_with_prefetch:friend.friend %}                                           
+                                                <small class="user-relationship" id="user-relationship-{{ friend.friend.id }}"><b>Pending</b></small>
+                                                <div class="action-buttons">
+                                                    <button class="action-button message-button" data-url="{% url 'chat:dm' friend.friend.id %}" button-action="message" user-id="{{ friend.friend.id }}">Chat</button>
+                                                    <button class="action-button remove-friend-button" data-url="{% url 'friend:send-cancel-request' friend.friend.id %}" button-action="send-cancel" user-id="{{ friend.friend.id }}">Cancel</button>
+                                                </div>
+                                            {% endwith %}
+                                        {% else %}
+                                                <small class="user-relationship" id="user-relationship-{{ friend.friend.id }}"><b>Stranger</b></small>
+                                                <div class="action-buttons">
+                                                    {% if request.user|get_sent_request_with_prefetch:friend.friend %} 
+                                                        {% with request_id=request.user|get_request_id_with_prefetch:friend.friend %} 
+                                                        <button class="action-button remove-friend-button" data-url="{% url 'friend:send-cancel-request' friend.friend.id %}" button-action="send-cancel" user-id="{{ friend.friend.id }}">Cancel</button>
+                                                        {% endwith %}
+                                                    {% endif %}
+                                                    <button class="action-button message-button" data-url="{% url 'chat:dm' friend.friend.id %}" button-action="message" user-id="{{ friend.friend.id }}">Chat</button>
+                                                    <button class="action-button add-friend-button" data-url="{% url 'friend:send-cancel-request' friend.friend.id %}" button-action="send-cancel" user-id="{{ friend.friend.id }}">Add Friend</button>
+                                                </div>
+                                        {% endif %}
+                                    {% endif %}
+                            {% endif %}
+                            {% else %} 
+                                <a class="custom-link" href="{% url 'users:user-posts' friend.friend.id %}">
+                                    <div id="user-name">{{ friend.friend.first_name }} {{ friend.friend.last_name }}</div>
+                                </a>
+                                <div id="details">
+                                    <span class="info">Friends</span><span class="personal-detail">{{ friend.friend.user_friendship.all.count }}</span>
+                                    <span class="info">Posts</span><span class="personal-detail">{{ friend.friend.posts_created.all.count }}</span>
+                                </div>        
+                                <small class="user-relationship"><b>You</b></small>
+                                <div class="action-buttons">
+                                    <button class="action-button message-button" data-url="{% url 'users:user-posts' friend.friend.id %}" button-action="current-user">View Your Profile</button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+    {% else %}
+    <div class="jumbotron center-content">
+        <div class="result-box">
+            <h1>No friends yet.</h1>
+        </div>
+    </div>
+    {% endif %}
+</div>
+<script type="text/javascript" src="{% static 'js/multiple_profiles.js' %}"></script>
+</div>
+
+<div class="spinner loading"></div>
+<div class="row">
+    <span class="col-12">
+        {% if page.has_next %}
+            <a class="infinite-more-link" href="?page={{ page.next_page_number }}"></a>
+        {% endif %}
+    </span>
+</div>
+<div class="pagination-container"></div>
+
+<script src="{% static "js/jquery.waypoints.min.js" %}"></script>
+<script src="/static/js/infinite.min.js"></script>
+<script>
+    var infinite = new Waypoint.Infinite({
+        element: $('.infinite-container')[0],
+
+        offset: 'bottom-in-view',
+
+        onBeforePageLoad: function () {
+            $('.loading').show();
+        },
+        onAfterPageLoad: function () {
+            $('.loading').hide();
+        }
+
+    });
+</script>
+{% endblock profile_content %}

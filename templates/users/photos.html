@@ -1,0 +1,106 @@
+{% extends "users/user_posts.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}
+    <title>Profile Photos</title>
+{% endblock title %}
+{% block current_page %}
+    <div class="buttons-container"> 
+        <div class="links">
+            <form action="{% url 'users:user-posts' user.id %}" method="get" class="links">
+                <button class="view">Posts</button>
+            </form>
+            <form action="{% url 'friend:friends-list' user.id %}" method="get" class="links">
+                <button class="view">Friends</button>
+            </form>
+            <form action="{% url 'users:photos' user.id %}" method="get" class="links">
+                <button class="view" style="color: #fff; background-color: #555;">Photos</button>
+            </form>
+            {% if user == request.user %}
+                <form action="{% url 'users:edit-account' %}" method="get" class="links">
+                    <button class="view">Details</button>
+                </form>
+            {% endif %}
+        </div>
+        <br>
+    </div>
+{% endblock current_page %} 
+{% block profile_content %}
+<div class="jumbotron">
+    {% if page %}    
+            <div class="row infinite-container photo-grid">
+                {% for photo in page %}
+                <div class="col-md-12 infinite-item">
+                    <div class="feed-picture">
+                        <div class="photo-container">
+                            <img src="{{ photo.photo.url }}">
+                            {% if user == request.user %}
+                            <div class="icons-container">
+                                <a id="photo-open-modal-button-{{photo.id}}" photo-id="{{photo.id}}" class="delete-icon"><i class="photo-interaction fas fa-trash-alt" photo-id="{{photo.id}}"></i></a>
+                                <a href="{% url 'users:apply-photo' photo.id %}" class="tick-icon">
+                                    <i class="fas fa-check"></i>
+                                </a>
+                            </div>
+                        <div id="photo-modal-{{photo.id}}" class="modal">
+                            <div class="modal-content">
+                            <span class="close" id="close-modal-{{photo.id}}">&times;</span>
+                            <p>Are you sure you want to delete this photo?</p>
+                            <div class="action-buttons">
+                                <button id="photo-cancel-button-{{photo.id}}" class="action-button message-button">Cancel</button>
+                                <button id="photo-delete-button-{{photo.id}}" class="action-button remove-friend-button" data-url="{% url 'users:delete-photo' photo.id %}">Delete</button>  
+                            </div>
+                            </div>
+                        </div>
+                        <script type="text/javascript" src="/static/js/delete_photo_modals.js"></script>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                </div>
+    {% else %}
+    <div class="jumbotron center-content">
+        <div class="result-box">
+        <h1>No profile photos yet.</h1></div>
+    </div>
+    {% endif %}
+</div>
+<script>
+    // create a class for the last row to leave a margin of 20px
+    const photos = document.querySelectorAll('.feed-picture');
+    const numColumns = 3; // Number of columns in the grid
+    const lastRowStartIndex = Math.floor((photos.length - 1) / numColumns) * numColumns;
+    const lastRowPhotos = Array.from(photos).slice(lastRowStartIndex);
+    lastRowPhotos.forEach(photo => {
+    photo.classList.add('last-row-margin');
+    });
+</script>
+
+<div class="spinner loading"></div>
+<div class="row">
+    <span class="col-12">
+        {% if page.has_next %}
+            <a class="infinite-more-link" href="?page={{ page.next_page_number }}"></a>
+        {% endif %}
+    </span>
+</div>
+<div class="pagination-container"></div>
+
+<script src="{% static "js/jquery.waypoints.min.js" %}"></script>
+<script src="/static/js/infinite.min.js"></script>
+<script>
+    var infinite = new Waypoint.Infinite({
+        element: $('.infinite-container')[0],
+
+        offset: 'bottom-in-view',
+
+        onBeforePageLoad: function () {
+            $('.loading').show();
+        },
+        onAfterPageLoad: function () {
+            $('.loading').hide();
+        }
+
+    });
+</script>
+{% endblock profile_content %}

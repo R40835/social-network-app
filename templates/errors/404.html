@@ -1,0 +1,25 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}
+    <title>404</title>
+{% endblock title %}
+{% block sidebars %}
+{% endblock sidebars %}
+{% block content %}
+<div class="search-error">
+    <div class="message">
+      <i class="fa-solid fa-circle-exclamation fa-fade"></i><h1>Page Not found</h1>
+    </div>
+    <h3>This content isn't available at the moment</h3>
+    <div class="action-buttons">
+      <button class="action-button comment-button" data-url="{% url 'post:feed' %}">Feed</button>
+      <button class="action-button like-button" id="go-back-button" style="margin-left: 10px;">Go Back</button>
+    </div>
+    <script>
+        document.getElementById("go-back-button").addEventListener("click", function() {
+            window.history.back();
+        });
+    </script>
+    <script type="text/javascript" src="/static/js/redirect.js"></script>
+</div>
+{% endblock content %}

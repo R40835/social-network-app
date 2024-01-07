@@ -1,0 +1,172 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}
+    <title>Post</title>
+{% endblock title %}
+{% block content %}
+<div class="jumbotron">
+    <div class="box-container">
+    <div class="post-box">
+        <div class="post-details">
+            {% if post.user != request.user %}
+                <a class="custom-link" href="{% url 'users:user-posts' post.user.id %}">
+                    <div class="box-user-container">
+                        {% if post.user.profile_photo %}
+                            <img class="mini-profile-picture" src="{{ post.user.profile_photo.url }}" alt="...">
+                        {% else %}
+                            <img class="mini-profile-picture" src="/media/app/default-user.png" alt="...">
+                        {% endif %}
+                        <p class="user-name">{{ post.user.first_name }} {{ post.user.last_name }}</p>    
+                    </div>
+                </a>
+            {% else %}
+                <a class="custom-link" href="{% url 'users:user-posts' post.user.id %}">
+                    <div class="box-user-container">
+                        {% if post.user.profile_photo %}
+                            <img class="mini-profile-picture" src="{{ post.user.profile_photo.url }}" alt="...">
+                        {% else %}
+                            <img class="mini-profile-picture" src="/media/app/default-user.png" alt="...">
+                        {% endif %}
+                        <p class="user-name">{{ post.user.first_name }} {{ post.user.last_name }}</p>    
+                    </div>
+                </a>
+                <div class="post-icons">
+                    <a href="{% url 'post:edit-post' post.id %}" class="edit-post-icon"><i class="fa-solid fa-pen"></i></a>
+                    <a id="post-open-modal-button" class="delete-post-icon">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </a>
+                </div> 
+                <div id="post-modal" class="modal">
+                    <div class="modal-content">
+                    <span class="close" id="close-modal">&times;</span>
+                    <p>Are you sure you want to delete this post?</p>
+                    <div class="action-buttons">
+                        <button id="post-cancel-button" class="action-button message-button">Cancel</button>
+                        <button id="post-delete-button" class="action-button remove-friend-button" data-url="{% url 'post:delete-post' post.id %}">Delete</button>  
+                    </div>
+                    </div>
+                </div>
+                <script type="text/javascript" src="{% static 'js/delete_post_modal.js' %}"></script>
+            {% endif %}
+        </div>
+        <br>
+        <p class="description">{{ post.description }}</p>
+        {% if post.photo %}
+            <img class="thumbnail" src="{{ post.photo.url }}" alt="Thumbnail">
+        {% endif %}
+        <br>
+        <div id="details">
+            <a id="myBtn" class="custom-link-likes" post-likers-id="{{ post.id }}" data-url="{% url 'post:likers' post.id %}">
+                <i class="fa-regular fa-thumbs-up"></i>
+                <span id="likes-count-{{ post.id }}">{{ post.likes }}</span>
+            </a>
+            <div id="myModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <div id="likersContainer"><!-- Content loaded via JavaScript --></div>
+                </div>
+            </div>
+            <a class="custom-link-likes" href="{% url 'post:post' post.id %}">
+                <i class="fa-regular fa-comment"></i>
+                <span>{{ post.comments.count }}</span>
+            </a>
+        </div>              
+            <!-- like and comment-->
+                {% if post in user.liked_posts.all %}
+                    <div class="action-buttons">
+                        <button class="action-button like-button" id="like-button-{{ post.id }}"  style="display: none;" data-post-id="{{ post.id }}" data-url="{% url 'post:like-post' post.id %}" data-liked="false">like</button>
+                        <button class="action-button unlike-button" id="unlike-button-{{ post.id }}" data-post-id="{{ post.id }}" data-url="{% url 'post:unlike-post' post.id %}" data-liked="true">unlike</button> 
+                        <button class="action-button comment-button" data-url="{% url 'post:create-comment' post.id %}" data-post-id="{{ post.id }}">comment</button> 
+                    </div>
+                {% else %}
+                    <div class="action-buttons">
+                        <button class="action-button unlike-button" id="unlike-button-{{ post.id }}" style="display: none;" data-post-id="{{ post.id }}" data-url="{% url 'post:unlike-post' post.id %}" data-liked="true">unlike</button> 
+                        <button class="action-button like-button" id="like-button-{{ post.id }}" data-post-id="{{ post.id }}" data-url="{% url 'post:like-post' post.id %}" data-liked="false">like</button> 
+                        <button class="action-button comment-button" data-url="{% url 'post:create-comment' post.id %}" data-post-id="{{ post.id }}">comment</button> 
+                    </div>
+                {% endif %}                                   
+                <hr>
+            <small class="date"><b>Date Created:</b> {{ post.date_created }}</small>
+        {% if page %}
+        <div class="comment-area">
+          <h3>Comments</h3>
+          <ul class="comments-list">
+            <div class="row infinite-container">
+                {% for comment in page %}
+                    <div class="col-md-12 infinite-item">
+                        {% if comment.post == post %}
+                            <div class="comment-container">
+                                <div class="post-details">
+                                    <a class="custom-link" href="{% url 'users:user-posts' comment.user.id %}">
+                                        <div class="box-user-container">
+                                            {% if comment.user.profile_photo %}
+                                                <img class="mini-profile-picture" style="height: 30px; width: 30px;" src="{{ comment.user.profile_photo.url }}" alt="...">
+                                            {% else %}
+                                                <img class="mini-profile-picture" style="height: 10%;" src="/media/app/default-user.png" alt="...">
+                                            {% endif %}
+                                            <small class="user-name"><b>{{ comment.user.first_name }} {{ comment.user.last_name }}</b></small>    
+                                        </div>
+                                    </a>
+                                    {% if comment.user_id == request.user.id %}
+                                        <div class="post-icons">
+                                            <a href="{% url 'post:edit-comment' comment.id %}" class="edit-post-icon"><i class="comment-interaction fa-solid fa-pen"></i></a>
+                                            <a id="comment-open-modal-button-{{comment.id}}" comment-id="{{comment.id}}" class="delete-post-icon"><i class="comment-interaction fa-solid fa-trash-can" comment-id="{{comment.id}}"></i></a>
+                                        </div>
+                                        <div id="comment-modal-{{comment.id}}" class="modal">
+                                            <div class="modal-content">
+                                            <span class="close" id="close-modal-{{comment.id}}">&times;</span>
+                                            <p>Are you sure you want to delete your comment?</p>
+                                            <div class="action-buttons">
+                                                <button id="comment-cancel-button-{{comment.id}}" class="action-button message-button">Cancel</button>
+                                                <button id="comment-delete-button-{{comment.id}}" class="action-button remove-friend-button" data-url="{% url 'post:delete-comment' comment.id %}">Delete</button>  
+                                            </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <li class="comment">
+                                    {{ comment.text }}
+                                </li>
+                            </div>
+                            <small><b>{{ comment.timestamp }}</b></small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+          </ul>
+          <script type="text/javascript" src="{% static 'js/delete_comment_modals.js' %}"></script>
+        {% endif %}
+      </div>
+    </div>
+</div>
+
+<div class="pagination-container"><!-- New content will be loaded here via javasscript--></div>
+<div class="spinner loading"></div>
+<div class="row">
+    <span class="col-12">
+        {% if page.has_next %}
+            <a class="infinite-more-link" href="?page={{ page.next_page_number }}"></a>
+        {% endif %}
+    </span>
+</div>
+
+<script src="{% static "js/jquery.waypoints.min.js" %}"></script>
+<script src="/static/js/infinite.min.js"></script>
+<script>
+    var infinite = new Waypoint.Infinite({
+        element: $('.infinite-container')[0],
+
+        offset: 'bottom-in-view',
+
+        onBeforePageLoad: function () {
+            $('.loading').show();
+        },
+        onAfterPageLoad: function () {
+            $('.loading').hide();
+        }
+    });
+</script>
+
+<script type="text/javascript" src="{% static 'js/interaction.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/likers_modal.js' %}"></script>
+{% endblock content %}

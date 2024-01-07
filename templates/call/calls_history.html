@@ -1,0 +1,97 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% load custom_call_filters %}
+{% block title %}
+    <title>Calls</title>
+{% endblock title %}
+{% block content %}
+{% if calls %}
+<div class="messages-container">
+    <div class="row infinite-container">
+        {% for call in calls %}
+            <div class="col-md-12 infinite-item">
+                <div class="{% if call.call_session.call_answered == True or call.caller_id == request.user.id or call.is_seen == True %}old-message {% else %} new-message {% endif %}">
+                    <div class="user-photo"> 
+                        {% if call.caller.id != request.user.id %}
+                            <img src="{% if call.caller.profile_photo %}{{call.caller.profile_photo.url}} {% else %}/media/app/default-user.png{% endif %}" alt="...">
+                        {% else %}
+                            <img src="{% if call.callee.profile_photo %}{{call.callee.profile_photo.url}} {% else %}/media/app/default-user.png{% endif %}" alt="...">
+                        {% endif %}
+                    </div>
+                    {% if call.caller.id != request.user.id %}
+                        <div class="message-content">
+                            <a class="custom-link" href="{% url 'call:call' call.id %}">
+                                <div class="user-info">
+                                    <h3 class="user-name">{{ call.caller.first_name }} {{ call.caller.last_name }}</h3>
+                                </div>
+                                {% if call.call_session.call_answered %}
+                                    <div class="message-text"><p>Incoming call.</p></div>
+                                    <p class="message-status">{{ call.call_duration|call_duration_format }}</p>
+                                    <i class="call-incoming fa-solid fa-arrow-left-long"></i>
+                                {% else %}
+                                    <div class="message-text"><p>Missed call.</p></div>
+                                    <p class="message-status">00:00:00</p>
+                                    <i class="call-incoming-missed fa-solid fa-arrow-left-long"></i>
+
+                                {% endif %}
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="message-content">
+                            <a class="custom-link" href="{% url 'call:call' call.id %}">
+                                <div class="user-info">
+                                    <h3 class="user-name">{{ call.callee.first_name }} {{ call.callee.last_name }}</h3>
+                                </div>
+                                {% if call.call_session.call_answered %}
+                                    <div class="message-text"><p>Outgoing call.</p></div>
+                                    <p class="message-status">{{ call.call_duration|call_duration_format }}</p>
+                                    <i class="call-outgoing fa-solid fa-arrow-right-long"></i>
+                                {% else %}
+                                    <div class="message-text"><p>Missed call.</p></div>
+                                    <p class="message-status">00:00:00</p>
+                                    <i class="call-outgoing-missed fa-solid fa-arrow-right-long"></i>
+                                {% endif %}
+                            </a>
+                        </div>
+                    {% endif %}
+                    <small style="margin-top: 80px;">{{ call.timestamp }}</small>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+    <div class="jumbotron">
+        <div class="jumbotron center-content">
+            <div class="result-box">
+                <h1>No calls yet.</h1>
+            </div>
+        </div>
+    </div>
+{% endif %}
+<div class="pagination-container"></div>
+<div class="spinner loading"></div>
+<div class="row">
+    <span class="col-12">
+        {% if calls.has_next %}
+            <a class="infinite-more-link" href="?page={{ calls.next_page_number }}"></a>
+        {% endif %}
+    </span>
+</div>
+<script src="{% static "js/jquery.waypoints.min.js" %}"></script>
+<script src="/static/js/infinite.min.js"></script>
+<script>
+    var infinite = new Waypoint.Infinite({
+        element: $('.infinite-container')[0],
+
+        offset: 'bottom-in-view',
+
+        onBeforePageLoad: function () {
+            $('.loading').show();
+        },
+        onAfterPageLoad: function () {
+            $('.loading').hide();
+        }
+    });
+</script>
+{% endblock content %}

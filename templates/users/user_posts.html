@@ -1,0 +1,272 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}
+    <title>Posts</title>
+{% endblock title %}
+{% block content %}
+<div class="profile-container">
+    {% if user.profile_photo %}
+        <div class="profile-picture">
+            <img src="{{ user.profile_photo.url }}" alt="...">
+        </div>
+    {% else %}
+        <div class="profile-picture">
+            <img src="/media/app/default-user.png" alt="...">
+        </div>
+    {% endif %}
+    {% if request.user == user %}
+        <div class="profile-details">
+            <h1>{{ user.first_name }} {{ user.last_name }}</h1><br>
+            <p><span class="info">Email</span>&nbsp<span class="personal-detail">{{ user.email }}</span></p>
+            <p><span class="info">Born</span>&nbsp&nbsp&nbsp<span class="personal-detail">{{ user.date_of_birth }}</span></p>
+            <div id="details">
+                <span class="info">Friends</span><span class="personal-detail">{{ user.user_friendship.all.count }}</span>
+                <span class="info">Posts</span><span class="personal-detail">{{ user.posts_created.all.count }}</span>
+            </div>
+        </div>
+    {% else %}
+        <div class="profile-details center-content">
+            <h1>{{ user.first_name }} {{ user.last_name }}</h1>
+            <div id="details">
+                <span class="info">Friends</span><span class="personal-detail">{{ user.user_friendship.all.count }}</span>
+                <span class="info">Posts</span><span class="personal-detail">{{ user.posts_created.all.count }}</span>
+            </div>
+            
+            <div id="single-profile">
+                {% if user|get_friends_with_prefetch:request.user %}
+                    <small class="user-relationship" id="user-relationship-{{ user.id }}"><b>Friends</b></small>
+                    <div class="action-buttons">
+                        <button class="action-button message-button" data-url="{% url 'chat:dm' user.id %}" button-action="message" user-id="{{ user.id }}">Chat</button>
+                        <button class="action-button remove-friend-button" data-url="{% url 'friend:remove-friend' user.id %}" button-action="remove" user-id="{{ user.id }}">Remove</button>
+                    </div>
+                {% else %}
+                    {% if request.user|get_received_request_with_prefetch:user %}
+                        {% with request_id=user|get_request_id_with_prefetch:request.user %}                                           
+                            <small class="user-relationship" id="user-relationship-{{ user.id }}"><b>Awiting Response</b></small>
+                            <div class="action-buttons">
+                                <button class="action-button message-button" data-url="{% url 'chat:dm' user.id %}" button-action="message" user-id="{{ user.id }}">Chat</button>
+                                <button class="action-button add-friend-button" data-url="{% url 'friend:accept-request' user.id %}" button-action="accept" user-id="{{ user.id }}" id="accept-button">Accept</button>
+                                <button class="action-button remove-friend-button" data-url="{% url 'friend:decline-request' request_id %}" button-action="decline" user-id="{{ user.id }}" id="decline-button">Decline</button>
+                            </div>
+                        {% endwith %}
+                    {% else %}
+                        {% if request.user|get_sent_request_with_prefetch:user %} 
+                            {% with request_id=request.user|get_request_id_with_prefetch:user %}                                           
+                                <small class="user-relationship" id="user-relationship-{{ user.id }}"><b>Pending</b></small>
+                                <div class="action-buttons">
+                                    <button class="action-button message-button" data-url="{% url 'chat:dm' user.id %}" button-action="message" user-id="{{ user.id }}">Chat</button>
+                                    <button class="action-button remove-friend-button" data-url="{% url 'friend:send-cancel-request' user.id %}" button-action="send-cancel" user-id="{{ user.id }}">Cancel</button>
+                                </div>
+                            {% endwith %}
+                        {% else %}
+                                <small class="user-relationship" id="user-relationship-{{ user.id }}"><b>Stranger</b></small>
+                                <div class="action-buttons">
+                                    {% if request.user|get_sent_request_with_prefetch:user %}
+                                        {% with request_id=request.user|get_request_id_with_prefetch:user %}
+                                        <button class="action-button remove-friend-button" data-url="{% url 'friend:send-cancel-request' user.id %}" button-action="send-cancel" user-id="{{ user.id }}">Cancel</button>
+                                        {% endwith %}
+                                    {% endif %}
+                                    <button class="action-button message-button" data-url="{% url 'chat:dm' user.id %}" button-action="message" user-id="{{ user.id }}">Chat</button>
+                                    <button class="action-button add-friend-button" data-url="{% url 'friend:send-cancel-request' user.id %}" button-action="send-cancel" user-id="{{ user.id }}">Add Friend</button>
+                                </div>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+<script type="text/javascript" src="/static/js/start_call.js"></script>
+<script type="text/javascript" src="{% static 'js/profile_actions.js' %}"></script>
+{% block current_page %}
+    <div class="buttons-container">
+        <div class="links">
+            <form action="{% url 'users:user-posts' user.id %}" method="get" class="links">
+                <button class="view" style="color: #fff; background-color: #555;">Posts</button>
+            </form>
+            <form action="{% url 'friend:friends-list' user.id %}" method="get" class="links">
+                <button class="view">Friends</button>
+            </form>
+            <form action="{% url 'users:photos' user.id %}" method="get" class="links">
+                <button class="view">Photos</button>
+            </form>
+            {% if user == request.user %}
+                <form action="{% url 'users:edit-account' %}" method="get" class="links">
+                    <button class="view">Details</button>
+                </form>
+            {% endif %}
+        </div>
+        <br>
+    </div>
+{% endblock current_page %} 
+<hr class="short-hr">
+{% block profile_content %}
+<div class="jumbotron">
+    {% if request.user == user %}
+    <div class="post-form-container" style="margin-top: 0px; margin-bottom: 0px;">
+            {% for field in form %}
+                <div class="field-errors {% if field.errors %}has-error{% endif %}">
+                    {% if field.errors %}
+                        <ul class="error-list">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <form enctype="multipart/form-data" method="POST">
+                {% csrf_token %}
+                <label for="{{form.description.id_for_label}}"></label>
+                {{ form.description }}
+                <div class="action-buttons" style="margin-bottom: 0px;">
+                    <label for="{{form.photo.id_for_label}}" class="custom-file-upload-post" style="margin-right: 10px;">
+                        <i class="fa fa-cloud-upload"></i>Upload Photo
+                    </label>
+                    {{form.photo}}
+                    <input id="post-button" type="submit" value="post">
+                </div>
+                <p id="file-info"></p>
+                <div class="box-user-container" style="margin-bottom: 0px;">
+                    <button type="button" id="clear-button" style="display: none;">Clear</button>
+                </div>
+                <script>
+                    const fileInput = document.getElementById("{{form.photo.id_for_label}}");
+                    const clearButton = document.getElementById("clear-button");
+                    const fileInfo = document.getElementById("file-info");
+                    // Handle file input change
+                    fileInput.addEventListener("change", function () {
+                    const file = fileInput.files[0]; // Get the selected file
+                    if (file) {
+                        fileInfo.textContent = `Photo uploaded: ${file.name}`; // Display file name
+                        clearButton.style.display = "inline"; // Show the clear button
+                    } else {
+                        fileInfo.textContent = "";
+                        clearButton.style.display = "none"; // Hide the clear button to avoid conflict with django from
+                    }
+                    });
+                    // Handle clear button click
+                    clearButton.addEventListener("click", function () {
+                    fileInput.value = null; // Clear the file input
+                    fileInfo.textContent = "";
+                    clearButton.style.display = "none"; // Hide the clear button
+                    });
+                </script>
+            </form>
+        </div>
+        {% endif %}
+        {% if page %}
+        <br>
+        <div class="row infinite-container" id="loaded-posts">
+            {% for post in page %}
+            <div class="col-md-12 infinite-item">
+            <div class="box-container">
+                <div class="box">
+                    {% if post.user != request.user %}
+                        <a class="custom-link" href="{% url 'users:user-posts' post.user.id %}">
+                            <div class="box-user-container">
+                                {% if post.user.profile_photo %}
+                                    <img class="mini-profile-picture" src="{{ post.user.profile_photo.url }}" alt="...">
+                                {% else %}
+                                    <img class="mini-profile-picture" src="/media/app/default-user.png" alt="...">
+                                {% endif %}
+                                <p class="user-name">{{ post.user.first_name }} {{ post.user.last_name }}</p>    
+                            </div>
+                        </a>
+                    {% else %}
+                        <a class="custom-link" href="{% url 'users:user-posts' user.id %}">
+                            <div class="box-user-container">
+                                {% if post.user.profile_photo %}
+                                    <img class="mini-profile-picture" src="{{ post.user.profile_photo.url }}" alt="...">
+                                {% else %}
+                                    <img class="mini-profile-picture" src="/media/app/default-user.png" alt="...">
+                                {% endif %}
+                                <p class="user-name">{{ post.user.first_name }} {{ post.user.last_name }}</p>    
+                            </div>
+                        </a>
+                    {% endif %}
+                    <br>
+                    <a class="custom-link" href="{% url 'post:post' post.id %}">
+                        <p>{{ post.description }}</p>
+                        {% if post.photo %}
+                            <img class="post-img" src="{{ post.photo.url }}" alt="...">
+                        {% endif %}
+                    </a>
+                    <br>
+                    <div id="details">
+                        <a id="myBtn-{{ post.id }}" class="custom-link-likes" post-likers-id="{{ post.id }}" data-url="{% url 'post:likers' post.id %}">
+                            <i class="fa-regular fa-thumbs-up"></i>
+                            <span id="likes-count-{{ post.id }}">{{ post.likes }}</span>
+                        </a>
+                        <div id="myModal-{{ post.id }}" class="modal">
+                            <div class="modal-content">
+                                <span class="close" id="close-{{ post.id }}">&times;</span>
+                                <div id="likersContainer-{{ post.id }}"><!-- Content loaded via JavaScript --></div>
+                            </div>
+                        </div>
+                        <a class="custom-link-likes" href="{% url 'post:post' post.id %}">
+                            <i class="fa-regular fa-comment"></i>
+                            <span>
+                                {{ post.comments.count }}
+                            </span>
+                        </a>
+                    </div>              
+                            {% if post in request.user.liked_posts.all %}
+                                <div class="action-buttons">
+                                    <button class="action-button like-button" id="like-button-{{ post.id }}"  style="display: none;" data-post-id="{{ post.id }}" data-url="{% url 'post:like-post' post.id %}" data-liked="false">like</button>
+                                    <button class="action-button unlike-button" id="unlike-button-{{ post.id }}" data-post-id="{{ post.id }}" data-url="{% url 'post:unlike-post' post.id %}" data-liked="true">unlike</button> 
+                                    <button class="action-button comment-button" data-url="{% url 'post:create-comment' post.id %}" data-post-id="{{ post.id }}">comment</button> 
+                                </div>
+                            {% else %}
+                                <div class="action-buttons">
+                                    <button class="action-button unlike-button" id="unlike-button-{{ post.id }}" style="display: none;" data-post-id="{{ post.id }}" data-url="{% url 'post:unlike-post' post.id %}" data-liked="true">unlike</button> 
+                                    <button class="action-button like-button" id="like-button-{{ post.id }}" data-post-id="{{ post.id }}" data-url="{% url 'post:like-post' post.id %}" data-liked="false">like</button> 
+                                    <button class="action-button comment-button" data-url="{% url 'post:create-comment' post.id %}" data-post-id="{{ post.id }}">comment</button> 
+                                </div>
+                            {% endif %}                                   
+                        <hr>
+                        <small><b>Date created:</b> {{ post.date_created }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="jumbotron center-content">
+            <div class="result-box">
+                <h1>No posts yet.</h1>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="pagination-container"></div>
+    <div class="spinner loading"></div>    
+    <div class="row">
+        <span class="col-12">
+            {% if page.has_next %}
+                <a class="infinite-more-link" href="?page={{ page.next_page_number }}"></a>
+            {% endif %}
+        </span>
+    </div>
+
+    <script type="module" src="{% static 'js/post_interactions.js' %}"></script>
+
+    <script src="{% static "js/jquery.waypoints.min.js" %}"></script>
+    <script src="/static/js/infinite.min.js"></script>
+    <script>
+        var infinite = new Waypoint.Infinite({
+            element: $('.infinite-container')[0],
+
+            offset: 'bottom-in-view',
+
+            onBeforePageLoad: function () {
+                $('.loading').show();
+            },
+            onAfterPageLoad: function () {
+                $('.loading').hide();
+            }
+        });
+    </script>        
+{% endblock profile_content %}
+{% endblock content %}

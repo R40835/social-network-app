@@ -1,0 +1,109 @@
+{% extends "users/user_posts.html" %}
+{% load static %}
+{% block title %}
+    <title>Account details</title>
+{% endblock title %}
+{% block current_page %}
+    <div class="buttons-container">
+        <div class="links">
+            <form action="{% url 'users:user-posts' user.id %}" method="get" class="links">
+                <button class="view">Posts</button>
+            </form>
+            <form action="{% url 'friend:friends-list' user.id %}" method="get" class="links">
+                <button class="view">Friends</button>
+            </form>
+            <form action="{% url 'users:photos' request.user.id %}" method="get" class="links">
+                <button class="view">Photos</button>
+            </form>
+            <form action="{% url 'users:edit-account' %}" method="get" class="links">
+                <button class="view" style="color: #fff; background-color: #555;">Details</button>
+            </form>
+        </div> 
+        <br>
+    </div>
+{% endblock current_page %}
+{% block profile_content %}
+    <div class="jumbotron">
+        <div class="edit-account-form">
+            {{user.friends.count}}
+            <h2>Your Details</h2>
+            <br>
+            <form enctype="multipart/form-data" method="POST">
+
+            {% csrf_token %}
+            <div class="input-container">
+            {{form.first_name.label}}
+            {{form.first_name}}
+            {{form.last_name.label}}
+            {{form.last_name}}  
+            </div>
+            <div class="input-container">
+            {{form.email.label}}
+            {{form.email}} 
+            </div>
+            <div class="input-container">
+            {{form.date_of_birth.label}}
+            {{ form.date_of_birth }}
+            </div>
+            <script>
+                flatpickr("#{{ form.date_of_birth.id_for_label }}", {
+                    dateFormat: "d/m/Y",
+                    theme: "dark",
+                    minDate: "01/01/1900",
+                    maxDate: "31/01/2020",
+
+                });
+            </script>
+            <div class="input-container">
+                <p>Upload New</p>
+                <label for="{{ form.profile_photo.id_for_label }}" class="custom-file-upload">
+                    <i class="fa fa-cloud-upload"></i>Profile Photo
+                </label>
+                {{ form.profile_photo }}
+            </div>
+            <div class="box-user-container">
+                <p id="file-info" style="margin-right: 10px;"></p>
+                <button type="button" id="clear-button" style="display: none;">Clear</button>
+            </div>
+            <script>
+                const fileInput = document.getElementById("{{form.profile_photo.id_for_label}}");
+                const clearButton = document.getElementById("clear-button");
+                const fileInfo = document.getElementById("file-info");
+                // Handle file input change
+                fileInput.addEventListener("change", function () {
+                const file = fileInput.files[0];
+                if (file) {
+                    fileInfo.textContent = `Photo uploaded: ${file.name}`;
+                    clearButton.style.display = "inline";
+                } else {
+                    fileInfo.textContent = "";
+                    clearButton.style.display = "none"; 
+                }
+                });
+                // Handle clear button click
+                clearButton.addEventListener("click", function () {
+                fileInput.value = null; 
+                fileInfo.textContent = "";
+                clearButton.style.display = "none"; 
+                });
+            </script>
+            <input class="edit-button" type="submit" value="Edit Details" >
+            <a class="change-password-button" href="{% url 'users:change-password' %}">Change Password</a>
+            <a id="account-open-modal-button" class="delete-account-button">Delete Account</a>
+        </form>
+      </div> 
+        <div id="account-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="close-modal">&times;</span>
+                <p>Are you sure you want to delete your account?</p>
+                <div class="action-buttons">
+                    <button id="account-cancel-button" class="action-button message-button">Cancel</button>
+                    <button id="account-delete-button" class="action-button remove-friend-button" data-url="{% url 'users:delete-account' %}">Delete</button>  
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript" src="/static/js/delete_account_modal.js/"></script>
+        <br>
+    </div>
+</div>   
+{% endblock profile_content %}

@@ -1,0 +1,55 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}
+    <title>Sign in</title>
+{% endblock title %}
+{% if not request.user.is_authenticated %}
+{% block sign %}
+<div class="signup-form">
+    <h2>Sign In</h2>
+    {% for field in form %}
+        <div class="field-errors {% if field.errors %}has-error{% endif %}">
+            {% if field.errors %}
+                <ul class="error-list">
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    {% endfor %}
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}
+        {{form.email}}   
+        {{form.password}}
+        <br>
+        <small><a class="custom-link-redirect" href="{% url 'password_reset' %}">Forgot password?</a></small>
+        <div class="center-content">
+            <input id="submit-button" type="submit" value="Sign in">
+        </div>
+        <br>
+        <hr>
+        <small>Don't have an account? <a class="custom-link-redirect" href="{% url 'users:sign-up' %}">Sign up</a></small>
+    </form>
+</div>
+{% endblock sign %}
+{% else %}
+{% block content %}
+<div class="jumbotron">
+    <div class="tile-container">
+        <div class="tile" data-url="{% url 'post:feed' %}"><i class="fa-solid fa-house"></i><br><h2>Feed</h2></div>
+        <div class="tile" data-url="{% url 'chat:messages' %}"><i class="fa-solid fa-message"></i><br><h2>Messages</h2></div>
+        <div class="tile" data-url="{% url 'call:calls-history' %}"><i class="fa-solid fa-phone"></i><br><h2>Calls</h2></div>
+        <div class="tile" data-url="{% url 'chat:user-rooms' %}"><i class="fa-solid fa-comments"></i><br><h2>Rooms</h2></div>
+        <div class="tile" data-url="{% url 'friend:online-friends-page' %}"><i class="fa-solid fa-users"></i><span class="online-indicator"></span><br><h2>Friends</h2></div>
+        <div class="tile" data-url="{% url 'friend:friend-requests' %}"><i class="fa-solid fa-user-plus"></i><br><h2>Requests</h2></div>
+        <div class="tile" data-url="{% url 'users:user-posts' request.user.pk %}"><i class="fa-solid fa-photo-film"></i><br><h2>Posts</h2></div>
+        <div class="tile" data-url="{% url 'users:photos' request.user.pk %}"><i class="fa-solid fa-images"></i></i><br><h2>Photos</h2></div>
+        <div class="tile" data-url="{% url 'post:create-post' %}"><i class="fa-solid fa-upload"></i><br><h2>Publish</h2></div>
+        <div class="tile" data-url="{% url 'chat:rooms' %}"><i class="fa-solid fa-users"></i><br><h2>Public</h2></div>
+        <div class="tile" data-url="{% url 'users:edit-account' %}"><i class="fa-solid fa-user"></i><br><h2>Account</h2></div>
+        <div class="tile" data-url="{% url 'notification:all-notifications' %}"><i class="fa-solid fa-bell"></i><br><h2>Notifications</h2></div>
+    </div>
+    <script type="text/javascript" src="/static/js/tiles_redirect.js"></script>
+</div>
+{% endblock content %}
+{% endif %}

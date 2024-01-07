@@ -1,0 +1,92 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}
+    <title>Sign up</title>
+{% endblock title %}
+{% block sign %}
+<div class="signup-form">
+    <h2>Sign Up</h2>
+    {% for field in form %}
+        <div class="field-errors {% if field.errors %}has-error{% endif %}">
+            {% if field.errors %}
+                <ul class="error-list">
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    {% endfor %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="input-container">
+            {{form.first_name}}
+            {{form.last_name}}        
+        </div>
+        {{form.email}}   
+        {{form.password}}
+        {{form.password2}}
+        {{ form.date_of_birth }}
+        <script>
+            const screenWidth = window.innerWidth;
+            const device = screenWidth <= 480 ? "phone" : "desktop";
+            const dateOfBirthInput = document.getElementById("dob-selector");
+
+            if (device === "phone") {
+                dateOfBirthInput.addEventListener('focus', function () {
+                    flatpickr("#dob-selector", {
+                        dateFormat: "d/m/Y",
+                        theme: "dark",
+                        minDate: "01/01/1900",
+                        maxDate: "31/01/2020",
+                    });                   
+                });
+            } else if (device === "desktop") {
+                flatpickr("#dob-selector", {
+                    dateFormat: "d/m/Y",
+                    theme: "dark",
+                    minDate: "01/01/1900",
+                    maxDate: "31/01/2020",
+                });
+            }
+        </script>
+        <label for="profile-photo-field" class="profile-photo-upload"> 
+            <i class="fa fa-cloud-upload"></i>Upload Profile Photo
+        </label>
+        {{form.profile_photo}}
+        <br>
+        <small id="file-info"></small>
+        <br>
+        <button type="button" id="clear-button" style="display: none;">Clear</button>
+        <script>
+            console.log("{{form.profile_photo.id_for_label}}")
+            const fileInput = document.getElementById("profile-photo-field");
+            const clearButton = document.getElementById("clear-button");
+            const fileInfo = document.getElementById("file-info");
+            // Handle file input change
+            fileInput.addEventListener("change", function () {
+            const file = fileInput.files[0]; // Get the selected file
+            if (file) {
+                fileInfo.textContent = `Photo uploaded: ${file.name}`; // Display file name
+                clearButton.style.display = "inline"; // Show the clear button
+            } else {
+                fileInfo.textContent = "";
+                clearButton.style.display = "none"; // Hide the clear button to avoid conflict with django from
+            }
+            });
+            // Handle clear button click
+            clearButton.addEventListener("click", function () {
+            fileInput.value = null; // Clear the file input
+            fileInfo.textContent = "";
+            clearButton.style.display = "none"; // Hide the clear button
+            });
+        </script>
+    <div class="center-content">
+        <input id="submit-button" type="submit" value="Sign up">        
+    </div>
+    <br>
+    <hr>
+    <small>Already have an account? <a class="custom-link-redirect" href="{% url 'users:sign-in' %}">Sign in</a></small>
+    </form>
+</div>
+{% endblock sign %}

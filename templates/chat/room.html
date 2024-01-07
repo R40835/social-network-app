@@ -1,0 +1,86 @@
+{% extends "users/base.html" %}
+{% block title %}
+    <title>Chat Room</title>
+{% endblock title %}
+{% block content %}
+<div id="chat-container">
+    <h2 class="center-content">{{ room.name }}</h2>
+    <div class="room-header">
+        <p><b><i class="fa-regular fa-comments"></i></b> {{ room.topic }}</p>
+        <div class="dropdown">
+            <button><i class="fa-solid fa-bars"></i></button>
+            <div class="dropdown-content">
+                {% if room.user_id == request.user.id %}
+                    <a href="{% url 'chat:leave-room' room.id %}">Delete <i class="photo-interaction fas fa-trash-alt"></i></i></a>
+                {% else %}
+                    <a href="{% url 'chat:leave-room' room.id %}">Leave <i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                {% endif %}
+                <hr>
+                <p style="margin-left: 10px;"><b>Room Members</b></p>
+                {% for member_id in room.members %}
+                <small>
+                    <a id="member-{{member_id}}" member-id="{{member_id}}" href="{% url 'users:user-posts' member_id %}"></a>
+                </small>
+                {% endfor %}
+            </div>
+            <script type="text/javascript" src="/static/js/room_dropdown.js/"></script>
+        </div>
+    </div>
+    <div id="chat-log" class="chat-log" current-user-id="{{request.user.id}}" current-user-name="{{ request.user.first_name }} {{ request.user.last_name }}" current-user-profile-photo="{% if request.user.profile_photo %} {{ request.user.profile_photo.url }} {% else %} /media/app/default-user.png {% endif %}" paticipant-profile-photo="{% if participant.profile_photo %} {{ participant.profile_photo.url }} {% else %} /media/app/default-user.png {% endif %}">
+        <div id="loading-spinner" class="messages-spinner" style="display: none;"></div>
+        {% if messages %}
+            {% for message in messages reversed %}
+                <div class="message-container {% if message.user == request.user %} sender-message {% else %} receiver-message{% endif %}" sender="{{message.user.id}}" data-sender="{{ message.user.first_name }}" data-timestamp="{{ message.timestamp }}">
+                    {% if message.user == request.user %}
+                        {% if request.user.profile_photo %}
+                            <img class="participant-photo" src="{{request.user.profile_photo.url}}" alt="...">
+                        {% else %} 
+                            <img class="participant-photo" src="/media/app/default-user.png" alt="...">
+                        {% endif %}
+                        <p>{{ message.content }}</p>
+                    {% else %}
+                        {% if message.user.profile_photo %}
+                            <img class="participant-photo" src="{{message.user.profile_photo.url}}" alt="...">
+                        {% else %}
+                            <img class="participant-photo" src="/media/app/default-user.png" alt="...">
+                        {% endif %}
+                        <p>{{ message.content }}</p>
+                    {% endif %}
+                </div>
+                {% if message.user == request.user %}
+                    <small><strong>You &nbsp;</strong>{{message.timestamp}}</small>
+                {% else %}
+                    <small style="margin-left: 50%;"><strong>{{ message.user.first_name }}</strong> &nbsp;{{message.timestamp}}</small>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div id="no-messages" class="center-content">
+                <p>No messages yet, start the conversation.</p>
+            </div>
+        {% endif %}
+        {% if messages %}      
+            {% if user_is_last_sender %}
+                <div id="indicator" class="message-indicator sent-indicator">Sent</div>
+            {% else %}
+                <div id="indicator" class="message-indicator received-indicator">Received</div>
+            {% endif %}
+        {% else %}
+            <div id="indicator" style="display: none;"></div>
+        {% endif %}
+
+    </div>
+    <div class="type-send">
+        <input id="chat-message-input" class="item-type" type="text" size="100" placeholder="Type your message...">
+        <button id="chat-message-submit" class="item-send"><i class="far fa-paper-plane"></i></button>
+    </div>
+</div>
+ 
+{{ room_id|json_script:"room-id" }}
+<script type="module" src="/static/js/messages.js"></script>
+
+{% if messages.has_next %}
+    <a id="messages-paginator" href="?page={{ messages.next_page_number }}" style="display: hidden;" current-page="{{ messages.number }}" total-pages="{{ messages.paginator.num_pages }}" current-user-id="{{request.user.id}}"></a>
+{% endif %}
+<script type="text/javascript" src="/static/js/messages_scroll.js"></script>    
+  
+{% endblock content %}

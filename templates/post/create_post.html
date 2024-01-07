@@ -1,0 +1,61 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}
+    <title>Create post</title>
+{% endblock title %}
+{% block content %}
+<div class="jumbotron">
+    <div class="post-form-container">
+        <h2>Create a New Post</h2>
+        {% for field in form %}
+            <div class="field-errors {% if field.errors %}has-error{% endif %}">
+                {% if field.errors %}
+                    <ul class="error-list">
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endfor %}
+           <form enctype="multipart/form-data" method="POST">
+            {% csrf_token %}
+            <label for="{{form.description.id_for_label}}"></label>
+            {{ form.description }}
+            <div class="action-buttons" style="margin-bottom: 0px;">
+                <label for="{{form.photo.id_for_label}}" class="custom-file-upload-post" style="margin-right: 10px;">
+                    <i class="fa fa-cloud-upload"></i>Upload Photo
+                </label>
+                {{form.photo}}
+                <input id="post-button" type="submit" value="post">
+            </div>
+            <p id="file-info"></p>
+            <div class="box-user-container" style="margin-bottom: 0px;">
+                <button type="button" id="clear-button" style="display: none;">Clear</button>
+            </div>
+            <script>
+                const fileInput = document.getElementById("{{form.photo.id_for_label}}");
+                const clearButton = document.getElementById("clear-button");
+                const fileInfo = document.getElementById("file-info");
+                // Handle file input change
+                fileInput.addEventListener("change", function () {
+                const file = fileInput.files[0]; // Get the selected file
+                if (file) {
+                    fileInfo.textContent = `Photo uploaded: ${file.name}`; // Display file name
+                    clearButton.style.display = "inline"; // Show the clear button
+                } else {
+                    fileInfo.textContent = "";
+                    clearButton.style.display = "none"; // Hide the clear button to avoid conflict with django from
+                }
+                });
+                // Handle clear button click
+                clearButton.addEventListener("click", function () {
+                    fileInput.value = null; // Clear the file input
+                    fileInfo.textContent = "";
+                    clearButton.style.display = "none";
+                });
+            </script>
+        </form>
+    </div>
+</div>
+{% endblock content %}

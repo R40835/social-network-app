@@ -1,0 +1,21 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}
+    <title>Create Chat Room</title>
+{% endblock title %}
+{% block content %}
+<div class="jumbotron">
+    <div class="create-room-form">
+        <div class="center-content">
+            <h2>Create a Chat Room</h2>
+        </div>
+        <form method="post">{% csrf_token %}
+            {{form.name}}
+            {{form.topic}}
+            <div class="center-content">
+                <input id="submit-button" type="submit" value="create">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}

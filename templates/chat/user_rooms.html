@@ -1,0 +1,72 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}
+    <title>User Rooms</title>
+{% endblock title %}
+{% block content %}
+{% if rooms %}
+<div class="row infinite-container">
+    {% for room in rooms %}
+    <div class="col-md-12 infinite-item">
+        <div class="room-box {% if not user_id in room.readers %}group-new-message {% else %}group-old-message {% endif %}">
+            <div class="room-header">
+                <div class="box-user-container">
+                    {% if room.user.profile_photo %}
+                        <img class="mini-profile-picture" style="height: 30px; width: 30px;" src="{{ room.user.profile_photo.url }}" alt="...">
+                    {% else %}
+                        <img class="mini-profile-picture" style="height: 10%;" src="/media/app/default-user.png" alt="...">
+                    {% endif %}
+                    <div class="user-name"> {{room.user.first_name}} {{room.user.last_name}}</div>
+                </div>
+                <div class="dropdown-rooms">
+                    <button><b style="font-size: 10px;">{{room.members|length}} Members<i class="fa-solid fa-users"></i></b></button>
+                    <div class="dropdown-rooms-content">
+                        {% for member_id in room.members %}
+                        <small>
+                            <a id="member-{{member_id}}" member-id="{{member_id}}" href="{% url 'users:user-posts' member_id %}"><!--users loaded via javascript--></a>
+                        </small>
+                        {% endfor %}                        
+                    </div>
+                </div>
+            </div>
+            <div class="center-content">
+                <div class="room-name">
+                    <h3>{{room.name}}</h3>
+                </div>
+                {% if room.topic %}
+                <div class="room-topic">
+                    <b><i class="fa-regular fa-comments"></i></b> {{ room.topic }}
+                </div>
+                {% endif %}
+                <form action="{% url 'chat:room' room.id %}">
+                    <button class="join-button">Chat</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+{% else %}
+<div class="jumbotron center-content">
+    <div class="result-box">
+        <h1>Not a member of any room yet.</h1>
+    </div>
+</div>
+{% endif %}
+
+<div class="pagination-container"></div>
+<div class="spinner loading"></div>
+<div class="row">
+    <span class="col-12">
+        {% if rooms.has_next %}
+            <a class="infinite-more-link" href="?page={{ rooms.next_page_number }}"></a>
+        {% endif %}
+    </span>
+</div>
+
+<script src="{% static "js/jquery.waypoints.min.js" %}"></script>
+<script src="/static/js/infinite.min.js"></script>
+<!--loading waypoints with dropdowns-->
+<script type="text/javascript" src="/static/js/room_dropdowns.js/"></script>
+
+{% endblock content %}

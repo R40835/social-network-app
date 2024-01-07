@@ -1,0 +1,296 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- scaling template for different screen sizes -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block title %}
+        <title>Home Page</title>
+    {% endblock title %}
+    <!-- loading css -->
+    <link rel="stylesheet" href="{% static "css/style.css" %}">
+    <!-- loading JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <!-- awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!--flat picker for calendar-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.3/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.3/dist/flatpickr.min.js"></script> 
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">    
+    <!-- google font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <!-- app base path -->
+    <script>var basePath = "{% url 'index' %}";</script>
+    <!-- force reloading when using browser back button -->
+    <script>
+        var perfEntries = performance.getEntriesByType("navigation");
+
+        if (perfEntries[0].type === "back_forward") {
+            location.reload(true);
+        }
+    </script> 
+</head>
+    <!--offline phone navbar-->
+    <nav class="phone-navbar">
+        <div class="phone-nav-brand">
+            <a href="{% if request.user.is_authenticated %} {% url 'users:home' %} {% else %} {% url 'index' %} {% endif %}">
+                <i class="fa-solid fa-globe"></i>
+                CircleUp
+            </a>
+        </div>
+            <a class="phone-drop-down" id="mobileMenuToggle">
+                <i class="fa-solid fa-bars"></i> Menu
+            </a>
+            <span id="all-phone-notifications" class="notification-badge">0</span>
+        </nav>
+    </html>
+    <!-- main navigation bar (desktop/phone) -->
+    <nav>
+        <ul class="navbar">
+            <li><a class="app-name" href="{% if request.user.is_authenticated %} {% url 'users:home' %} {% else %} {% url 'index' %} {% endif %}">
+                <i class="fa-solid fa-globe"></i>
+                CircleUp
+            </a></li>
+            <!--collapse navbar for phone-->
+            <div class="phone-visible"><a id="collapseNavbarBtn"><i class="fa-solid fa-caret-up collapse-menu"></i></a></div>
+            {% if request.user.is_authenticated %}
+                <li> 
+                    <form action="{% url 'users:search-user' %}" method="GET" role="search">{% csrf_token %}
+                        <div class="search-field">
+                            <li>
+                                <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search Users Here..." required>
+                            </li>
+                            <li>
+                                <button class="search-button" type="submit" name="action">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </li>
+                        </div>
+                    </form>
+                </li>
+                <div class="nav-center">
+                    <li><a href="{% url 'post:feed' %}">
+                        <i class="fa-solid fa-house"></i><div class="phone-visible"><small>Feed</small></div>
+                    </a></li>
+                    <li><a href="{% url 'chat:messages' %}" id="message-link">
+                        <i class="fa-solid fa-message"></i><div class="phone-visible"><small>Messages</small></div>
+                        <span id="message-count" class="notification-badge">{{ unread_message_count }}</span>
+                    </a></li>
+                    <li><a href="{% url 'call:calls-history' %}">
+                        <i class="fa-solid fa-phone"></i><div class="phone-visible"><small>Calls</small></div>
+                        <span id="missed-calls-count" class="notification-badge">{{ missed_calls_count }}</span>
+                    </a></li>
+                    </li>
+                    <li><a href="{% url 'chat:user-rooms' %}">
+                        <i class="fa-solid fa-comments"></i><div class="phone-visible"><small>Rooms</small></div>
+                        <span id="group-message-count" class="notification-badge">{{ unread_group_message_count }}</span>
+                    </a></li>
+                    <li><a href="{% url 'friend:friend-requests' %}" id="friend-request-link">
+                        <i class="fa-solid fa-user-plus"></i><div class="phone-visible"><small>Requests</small></div>
+                        <span id="friend-request-count" class="notification-badge">{{ friend_request_count }}</span>
+                    </a></li>
+                    <!--phone navbar options-->
+                    <div class="phone-visible">
+                        <li><a href="{% url 'friend:friends-list' request.user.id %}">
+                        <i class="fa-solid fa-user-group"></i>
+                        <div class="phone-visible"><small>Friends</small></div></a></li>
+                    </div>
+                    <div class="phone-visible">
+                        <li><a href="{% url 'chat:rooms' %}">
+                        <i class="fa-solid fa-users"></i>
+                        <div class="phone-visible"><small>PubRooms</small></div></a></li>
+                    </div>
+                    <div class="phone-visible">
+                        <li><a href="{% url 'chat:create-room' %}">
+                        <i class="fa-solid fa-circle-plus"></i>
+                        <div class="phone-visible"><small>CreaRoom</small></div></a></li>
+                    </div>
+                    <div class="phone-visible"><li><a href="{% url 'post:create-post' %}">
+                        <i class="fa-solid fa-upload"></i>
+                        <div class="phone-visible"><small>CreaPost</small></div></a></li>
+                    </div>
+                    <div class="phone-visible">
+                        <li><a href="{% url 'users:user-posts' request.user.id %}">
+                            <i class="fa-solid fa-photo-film"></i>
+                            <div class="phone-visible"><small>Posts</small></div></a></li>
+                    </div>
+                    <div class="phone-visible">
+                        <li><a href="{% url 'users:photos' request.user.id %}">
+                            <i class="fa-solid fa-images"></i>
+                            <div class="phone-visible"><small>Photos</small></div></a></li>
+                    </div>
+                </div>
+                <div class="nav-right">
+                        <li><a href="{% url 'friend:online-friends-page' %}">
+                            <i class="fa-solid fa-users"></i><span class="online-indicator" style="margin-left: -5px;"></span><div class="phone-visible"><small>Online Friends</small></div>
+                        </a></li>
+                        <li><a href="{% url 'users:edit-account' %}">
+                            <i class="fa-solid fa-user"></i><div class="phone-visible"><small>Account</small></div>
+                        </a></li>
+                        <li><a href="{% url 'notification:all-notifications' %}" id="notification-link">
+                            <i class="fa-solid fa-bell"></i><div class="phone-visible"><small>Notifications</small></div>
+                            <span id="notification-count" class="notification-badge">{{ unread_notification_count|add:unread_newfriend_count }}</span>
+                        </a></li>
+                        <li><a href="{% url 'users:sign-out' %}">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i><div class="phone-visible"><small>sign out</small></div>
+                        </a></li>
+                </div>
+            {% else %}
+            <div class="nav-right">
+                <li><a href="{% url 'users:sign-in' %}">
+                    <i class="fa-solid fa-right-to-bracket"></i><div class="phone-visible">sign in</div>
+                </a></li>
+                <li><a href="{% url 'users:sign-up' %}">
+                    <i class="fa-solid fa-pen-to-square"></i><div class="phone-visible">sign up</div>
+                </a></li>
+            </div>
+            {% endif %}
+        </ul>
+    </nav>
+    <script type="text/javascript" src="/static/js/phone_navbar.js"></script>
+    {% if request.user.is_authenticated %}
+        <!--call ring-->
+        <audio id="ringtone">
+            <source src="/media/audio/phone-ringing.mp3" type="audio/mp3">
+        </audio>
+        <!--notification modal-->
+        <div id="notification-modal-id" class="notification-modal">
+            <div class="notification-modal-content new-notification">
+                <span id="notification-modal-text"><!--text written with javascript depending on the notification type--></span>
+            </div>
+        </div>
+        <!--call modal-->
+        <div id="call-modal-id" class="call-modal">
+            <div class="call-modal-content">
+                <span id="call-modal-text"><!--text written with javascript depending on the notification type--></span>
+            </div>
+        </div>        
+        <script type="module" src="{% static 'js/notifications.js' %}"></script> 
+    {% endif %}
+    {% block sidebars %}
+    <!-- sidebars -->
+    {% if user.is_authenticated %}
+        <div class="sidebar-left phone-hidden">
+            <div class="sidebar-header" style=" margin-bottom: 0px;">
+                <div class="box-user-container">
+                    {% if request.user.profile_photo %}
+                        <img class="sidebar-photo" src="{{ request.user.profile_photo.url }}" alt="...">
+                    {% else %}
+                        <img class="sidebar-photo" src="/media/app/default-user.png" alt="...">
+                    {% endif %}
+                    
+                    <h3 class="user-name" style="margin-left: 10px;">{{ request.user.first_name }}</h3>    
+                </div>
+            </div>
+            <ul class="sidebar-menu" style=" margin-top: 0px;">
+                <li><a href="{% url 'users:edit-account' %}">
+                    <i class="fa-solid fa-user"></i>
+                    Account</a></li>
+                <li><a href="{% url 'friend:friends-list' request.user.id %}">
+                    <i class="fa-solid fa-user-group"></i>
+                    Friends</a></li>
+                <li><a href="{% url 'users:photos' request.user.id %}">
+                    <i class="fa-solid fa-images"></i>
+                    Photos</a></li>
+                <li><a href="{% url 'users:user-posts' request.user.id %}">
+                    <i class="fa-solid fa-photo-film"></i>
+                    Posts</a></li>
+            </ul>
+            <hr>
+            <div class="sidebar-header" style=" margin-bottom: 0px;">
+                <h3 style="margin-top: auto; left: 0;">
+                    Online Friends
+                </h3>    
+            </div>
+            <ul class="sidebar-menu" style=" margin-top: 0px;" id="online-friends-list">
+                {% if user_friendships %}
+                    {% for friendship in user_friendships %}
+                        <li class="online-friends" id="friend-{{friendship.friend.id}}" style="display: none;">
+                            <a href="{% url 'chat:dm' friendship.friend.id %}" class="box-user-container">
+                                <img class="mini-profile-picture" style="height: 20px; width: 20px; margin-right: 0px;" src="{% if friendship.friend.profile_photo %}{{ friendship.friend.profile_photo.url }} {% else %} /media/app/default-user.png {% endif %}" alt="...">
+                                <span class="online-indicator" style="margin-left: -10px;"></span>
+                                <small style="margin-left: 0px;" id="friend-name-{{friendship.friend.id}}">
+                                    {{friendship.friend.first_name}} {{friendship.friend.last_name}}
+                                </small>       
+                            </a>
+                        </li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+        </div>
+        <div class="sidebar-right phone-hidden">
+            <div class="sidebar-header" style=" margin-bottom: 0px;">
+                <h3 style="margin-top: 10px; left: 0;">
+                    Updates
+                </h3>    
+            </div>
+            <ul class="sidebar-menu" style=" margin-top: 0px;">
+                <li><a href="{% url 'notification:all-notifications' %}" id="notification-link">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notification-count" class="notification-badge">{{ unread_notification_count }}</span>
+                    Notifications
+                </a></li>
+                <li><a href="{% url 'friend:friend-requests' %}">
+                    <i class="fa-solid fa-user-plus"></i>
+                    Friend Requests</a></li>
+                <hr>
+            </ul>
+            <div class="sidebar-header" style=" margin-bottom: 0px;">
+                <h3 style="margin-top: auto; left: 0;">
+                    Chat
+                </h3>    
+            </div>
+            <ul class="sidebar-menu" style=" margin-top: 0px;">
+                <li><a href="{% url 'call:calls-history' %}">
+                    <i class="fa-solid fa-phone"></i>
+                    Your Calls</a></li>
+                <li><a href="{% url 'chat:messages' %}">
+                    <i class="fa-solid fa-message"></i>
+                    Your Messages</a></li>
+                <li><a href="{% url 'chat:user-rooms' %}">
+                    <i class="fa-solid fa-comments"></i>
+                    Your Rooms</a></li>
+                <li><a href="{% url 'chat:rooms' %}">
+                    <i class="fa-solid fa-users"></i>
+                    Public Rooms</a></li>
+                <li><a href="{% url 'chat:create-room' %}">
+                    <i class="fa-solid fa-circle-plus"></i>
+                    Create Room</a></li>
+                <hr>
+            </ul>
+            <div class="sidebar-header" style=" margin-bottom: 0px;">
+                <h3 style="margin-top: auto; left: 0;">
+                    Posts
+                </h3>    
+            </div>
+            <ul class="sidebar-menu" style=" margin-top: 0px;">
+                <li><a href="{% url 'post:create-post' %}">
+                    <i class="fa-solid fa-upload"></i>
+                    Create Post</a></li>
+                <li><a href="{% url 'users:user-posts' request.user.id %}">
+                    <i class="fa-solid fa-photo-film"></i>
+                    Your Posts</a></li>
+                <li><a href="{% url 'post:feed' %}">
+                    <i class="fa-solid fa-house"></i>
+                    Feed</a></li>
+            </ul>
+        </div>
+        <script type="text/javascript" src="{% static 'js/active_users.js' %}"></script>
+    {% endif %}
+    {% endblock sidebars %}
+<body>
+    {% if user.is_authenticated %}
+        <div class="main-content">
+            {% block content %}
+            {% endblock content %}
+        </div>
+    {% else %}
+        {% block sign %}
+        {% endblock sign %}
+    {% endif %}
+</body>
+</html>

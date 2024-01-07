@@ -1,0 +1,74 @@
+{% extends "users/base.html"%}
+{% load static %}
+{% block title %}
+    <title>Friend requests</title>
+{% endblock title %}
+{% block content %}
+{% if friend_requests %}
+<div class="row infinite-container photo-grid">
+    {% for friend_request in friend_requests %}
+    <div class="col-md-12 infinite-item">
+        {% if friend_request.user != request.user %}
+            <div class="profile-card center-content">  
+                {% if friend_request.user.profile_photo %}
+                    <img id="profile-photo" src="{{friend_request.user.profile_photo.url}}" alt="Profile Photo">
+                {% else %}
+                    <img id="profile-photo" src="/media/app/default-user.png" alt="Profile Photo">
+                {% endif %}
+                <div class="profile-content">
+                    <a class="custom-link" href="{% url 'users:user-posts' friend_request.user.id %}">
+                        <div id="user-name">{{ friend_request.user.first_name }} {{ friend_request.user.last_name }}</div>
+                    </a>
+                    <div id="details">
+                        <span class="info">Friends</span><span class="personal-detail">{{ friend_request.user.user_friendship.all.count }}</span>
+                        <span class="info">Posts</span><span class="personal-detail">{{ friend_request.user.posts_created.all.count }}</span>
+                    </div>        
+                    <div class="action-buttons">
+                        <button id="accept-button-{{friend_request.user.id}}" class="action-button add-friend-button" data-url="{% url 'friend:accept-request' friend_request.user.id %}" button-action="accept" user-id="{{friend_request.user.id}}">Accept</button>
+                        <button id="decline-button-{{friend_request.user.id}}" class="action-button remove-friend-button" data-url="{% url 'friend:decline-request' friend_request.id %}" button-action="decline" user-id="{{friend_request.user.id}}">Decline</button>
+                    </div>
+                    <div id="accepted-button-{{friend_request.user.id}}" style="display: none;" class="center-content"><button class="action-button response-button">Friend Request Accepted</button></div>
+                    <div id="declined-button-{{friend_request.user.id}}" style="display: none;" class="center-content"><button class="action-button response-button">Friend Request Declined</button></div>
+                </div>
+            </div>
+        {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+    <script type="text/javascript" src="{% static 'js/friend_requests.js' %}"></script>
+
+{% else %}
+<div class="jumbotron center-content">
+    <div class="result-box">
+        <h1>No friend requests yet.</h1>
+    </div>
+</div>
+{% endif %}
+<div class="spinner loading"></div>
+<div class="row">
+    <span class="col-12">
+        {% if friend_requests.has_next %}
+            <a class="infinite-more-link" href="?page={{ friend_requests.next_page_number }}"></a>
+        {% endif %}
+    </span>
+</div>
+<div class="pagination-container"></div>
+
+<script src="{% static "js/jquery.waypoints.min.js" %}"></script>
+<script src="/static/js/infinite.min.js"></script>
+<script>
+    var infinite = new Waypoint.Infinite({
+        element: $('.infinite-container')[0],
+
+        offset: 'bottom-in-view',
+
+        onBeforePageLoad: function () {
+            $('.loading').show();
+        },
+        onAfterPageLoad: function () {
+            $('.loading').hide();
+        }
+
+    });
+</script>
+{% endblock content %}

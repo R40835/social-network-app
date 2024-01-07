@@ -1,0 +1,62 @@
+{% extends "users/user_posts.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}
+    <title>Friends</title>
+{% endblock title %}
+{% block content %}
+{% if page %}
+    <div class="online-friends-form">
+        <ul class="sidebar-menu" style=" margin-top: 0px;" id="online-friends-page">
+            <div class="row infinite-container">
+                {% for user in page %}
+                    <div class="col-md-12 infinite-item">
+                        <li class="online-friends-page" id="friend-{{user.id}}-page-item" style="margin-left: 0px;">
+                            <a href="{% url 'chat:dm' user.id %}" class="box-user-container">
+                                <img class="mini-profile-picture" style="height: 20px; width: 20px; margin-right: 0px;" src="{% if user.profile_photo %}{{ user.profile_photo.url }} {% else %} /media/app/default-user.png {% endif %}" alt="...">
+                                <span class="online-indicator" style="margin-left: -10px;"></span>
+                                <small id="friend-name-{{user.id}}-page-item">
+                                    {{user.first_name}} {{user.last_name}}
+                                </small>       
+                            </a>
+                        </li>
+                    </div>
+                {% endfor %}
+            </div>
+        </ul>
+    </div>
+{% else %}
+    <div class="jumbotron center-content" id="no-online-friends">
+        <div class="result-box">
+            <h1>No friends online right now.</h1>
+        </div>
+    </div>
+    <div class="online-friends-form" style="display: none;"><ul class="sidebar-menu" style=" margin-top: 0px;" id="online-friends-page"></ul></div>
+{% endif %}
+<div class="pagination-container"></div>
+    <div class="spinner loading"></div>    
+    <div class="row">
+        <span class="col-12">
+            {% if page.has_next %}
+                <a class="infinite-more-link" href="?page={{ page.next_page_number }}"></a>
+            {% endif %}
+        </span>
+    </div>
+
+    <script src="{% static "js/jquery.waypoints.min.js" %}"></script>
+    <script src="/static/js/infinite.min.js"></script>
+    <script>
+        var infinite = new Waypoint.Infinite({
+            element: $('.infinite-container')[0],
+
+            offset: 'bottom-in-view',
+
+            onBeforePageLoad: function () {
+                $('.loading').show();
+            },
+            onAfterPageLoad: function () {
+                $('.loading').hide();
+            }
+        });
+    </script>        
+{% endblock content %}
