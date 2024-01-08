@@ -36,6 +36,51 @@ A fully-featured real-time web application built using Django, PostgreSQL, Redis
 - Calls real-time notifications.
 - Missed calls real-time notifications.
 
+# App Setup
+1. Install the dependencies listed in the requirements.txt file using the following command:
+```
+pip install -r requirements.txt
+```
+2. Create a postgres database and user for the app.
+3. Setup a redis server and run it, windows users can download the zip file containing the server from the following link:
+https://github.com/zkteco-home/redis-windows/releases/tag/7.0.11
+4. Create an agora account for free then get your app ID and Certificate. Please use the following link to sign up:
+https://www.agora.io/en/blog/how-to-get-started-with-agora/
+5. Using python generate a secret key as follows:
+```
+>>> import secrets
+>>> secrets.token_hex(60)
+```
+6. Create a .env file in the project root for the environment variables, and assign the appropriate values to the corresponding variables:
+```
+DEBUG=...
+SECRET_KEY=...
+DATABASE_USER=...
+DATABASE_PASSWORD=...
+DATABASE_NAME=...
+EMAIL_HOST=...
+EMAIL_HOST_USER=...
+EMAIL_HOST_PASSWORD=...
+EMAIL_PORT=...
+EMAIL_USE_TLS=...
+EMAIL_USE_SSL=...
+AGORA_APP_ID=...
+AGORA_APP_CERTIFICATE=...
+```
+- Note: Do not use quotes!
+7. Make migrations using the following command: 
+```
+python manage.py makemigrations
+```
+8. Migrate using the following command: 
+```
+python manage.py migrate
+```
+9. Run the server using the following command: 
+```
+python manage.py runserver
+```
+
 # Technology Stack
 - Django for backend development.
 - PostgreSQL for data storage.
