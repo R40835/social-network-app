@@ -1755,6 +1755,154 @@ p {
     margin-right: auto;
     top: 0;
 }
+
+/* Streams Page */
+#video-streams {
+    display: flex;
+    flex-wrap: wrap;
+    height: 85vh;
+    width: 95%;
+    margin: 0 auto;
+}
+
+.video-container {
+    flex-basis: 500px;
+    flex-grow: 1;
+    max-height: 100%;
+    min-height: 350px;
+    border: #333333;
+    border-radius: 5px;
+    margin: 2px;
+    background-color: #7e7d7d;
+    position: relative;
+}
+
+.video-player{
+    height: 100%;
+    width: 100%;
+}
+
+.video-player > * {
+    border-radius: 5px;
+}
+
+@media screen and (max-width:1650px) {
+    .video-container{
+        flex-basis: 300px;
+        min-height: 200px;
+    }
+}
+/* Updated styles for the current user's video container */
+#video-streams {
+    position: relative; 
+}
+
+.current-user-video {
+    position: absolute;
+    background-color: #7e7d7d;
+    border: #333333;
+    border-radius: 5px;
+    margin-top: 10px;
+    margin-right: 10px;
+    width: 30%;
+    height: 30%;
+    right: 0;
+    z-index: 2; 
+}
+
+.callee-photo-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; 
+    height: 85vh;
+}
+
+.callee-photo-wrapper img {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    display: block; 
+    margin: auto; 
+}
+
+#call-controls {
+    position: absolute;
+    background-color: #fff;
+    color: #4285f4; 
+    font-size: 24px;
+    border: #333333;
+    border-radius: 5px;
+    position: fixed;
+    bottom:10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30%;
+    height: 10%;
+    right: 0;
+    z-index: 2; 
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly; 
+}
+
+#hangup-button {
+    color: red;
+}
+#mic-on-button:hover,
+#mic-off-button:hover,
+#camera-on-button:hover,
+#camera-off-button:hover,
+#hangup-button:hover {
+    cursor: pointer;
+    color: #ccc;
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 10px;
+}
+
+.user-section {
+    order: 1;
+}
+
+.call-section {
+    order: 1;
+}
+.call-section i {
+    width:100%;
+}
+
+.call-button {
+    width: 100%; 
+    color: #4285f4;
+    padding: 10px;
+    font-size: 24px;
+}
+
+.call-button:hover {
+    cursor: pointer;
+    color: #7e7d7d;
+}
+
+.call-incoming {
+    color: #27ae60;
+}
+
+.call-outgoing {
+    color: #27ae60;
+}
+
+.call-incoming-missed {
+    color: rgb(226, 61, 61);
+}
+
+.call-outgoing-missed {
+    color: rgb(226, 61, 61);
+}
+
 /* Small screens; Media query for screens with a maximum width of 480px (typical for phones) */
 @media (max-width: 480px) {
     .phone-hidden {
@@ -2650,7 +2798,7 @@ p {
         margin: 20px auto 0;
         border-radius: 5px;
         color: white;
-        background-color: #3498db; /*4cb69f*/
+        background-color: #3498db; 
         border: none;
         cursor: pointer;
     }
@@ -3341,8 +3489,8 @@ p {
     }
     .chat-header {
         display: flex;
-        justify-content: space-between; /* This will space the child elements evenly */
-        align-items: center; /* This will vertically center the child elements */
+        justify-content: space-between; 
+        align-items: center;
         padding: 10px;
     }
     
@@ -3365,203 +3513,4 @@ p {
         padding: 10px;
         font-size: 12px;
     }
-}
-/************************************************************************************************************************************/
-/* ------------------  Global Styling ------------------ */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap');
-
-
-:root {
-    --shaddow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);
-}
-/* ------------------  Streams Page ------------------ */
-
-#video-streams {
-    display: flex;
-    flex-wrap: wrap;
-    height: 85vh;
-    width: 95%;
-    margin: 0 auto;
-}
-
-.video-container {
-    flex-basis: 500px;
-    flex-grow: 1;
-    max-height: 100%;
-    min-height: 350px;
-    border: #333333;
-    border-radius: 5px;
-    margin: 2px;
-    background-color: #7e7d7d;
-    position: relative;
-}
-
-.video-player{
-    height: 100%;
-    width: 100%;
-}
-
-.video-player > * {
-    border-radius: 5px;
-}
-
-@media screen and (max-width:1650px) {
-    .video-container{
-        flex-basis: 300px;
-        min-height: 200px;
-    }
-}
-/********************************************************************************/
-/* Updated styles for the current user's video container */
-#video-streams {
-    position: relative; 
-}
-
-.current-user-video {
-    position: absolute;
-    background-color: #7e7d7d;
-    border: #333333;
-    border-radius: 5px;
-    margin-top: 10px;
-    margin-right: 10px;
-    width: 30%;
-    height: 30%;
-    right: 0;
-    z-index: 2; 
-}
-
-.callee-photo-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; 
-    height: 85vh;
-}
-
-.callee-photo-wrapper img {
-    width: 250px;
-    height: 250px;
-    border-radius: 50%;
-    display: block; 
-    margin: auto; 
-}
-/* Rest of your existing styles... */
-
-
-/*************************************************/
-
-/* ------------------  Streams Page | Controls ------------------ */
-
-
-/* #controls-wrapper{
-    display: flex;
-    width: 100%;
-    justify-content: center;
-    column-gap: 1em;
-    padding: 5px 20px;
-    position: fixed;
-    bottom:20px;
-
-
-}
-
-.control-icon{
-    height: 20px;
-    width: 20px;
-    box-shadow: var(--shaddow);
-    background-color: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-} */
-
-/* #leave-btn{
-    background-color: rgb(255, 80, 80, 1);
-} */
-/* #call-controls{
-    display: flex;
-    width: 100%;
-    justify-content: center;
-    column-gap: 1em;
-    padding: 5px 20px;
-    position: fixed;
-    bottom:20px;
-} */
-#call-controls {
-    position: absolute;
-    background-color: #fff;
-    color: #4285f4; /* rgb(140, 140, 232)*/
-    font-size: 24px;
-    border: #333333;
-    border-radius: 5px;
-    position: fixed;
-    bottom:10%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 30%;
-    height: 10%;
-    right: 0;
-    z-index: 2; 
-    display: flex;
-    align-items: center;
-    justify-content: space-evenly; 
-}
-
-#hangup-button {
-    color: red;
-}
-#mic-on-button:hover,
-#mic-off-button:hover,
-#camera-on-button:hover,
-#camera-off-button:hover,
-#hangup-button:hover {
-    cursor: pointer;
-    color: #ccc;
-}
-
-
-/***************************************************************************************************/
-.chat-header {
-    display: flex;
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 10px;
-}
-
-.user-section {
-    order: 1;
-}
-
-.call-section {
-    order: 1;
-}
-.call-section i {
-    width:100%;
-}
-
-.call-button {
-    width: 100%; 
-    color: #4285f4;
-    padding: 10px;
-    font-size: 24px;
-}
-
-.call-button:hover {
-    cursor: pointer;
-    color: #7e7d7d;
-}
-
-.call-incoming {
-    color: #27ae60;
-}
-
-.call-outgoing {
-    color: #27ae60;
-}
-
-.call-incoming-missed {
-    color: rgb(226, 61, 61);
-}
-
-.call-outgoing-missed {
-    color: rgb(226, 61, 61);
 }
